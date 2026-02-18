@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Singe Product
+{% endblock title %}
+
+
+{% block content %}
+{% load static %}
+<div class="page-holder bg-light">
+    <section class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-6">
+                    <!-- PRODUCT SLIDER-->
+                    <div class="row m-sm-0">
+                        <div class="col-sm-2 p-sm-0 order-2 order-sm-1 mt-2 mt-sm-0 px-xl-2">
+                            <div class="swiper product-slider-thumbs">
+                                <div class="swiper-wrapper">
+                                    {% for image in product.images.all %}
+                                    <div class="swiper-slide h-auto swiper-thumb-item mb-3"><img class="w-100"
+                                                                                                 src="{{ image.image.url }}"
+                                                                                                 alt="...">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-10 order-1 order-sm-2">
+                            <div class="swiper product-slider">
+                                <div class="swiper-wrapper">
+                                    {% for image in product.images.all %}
+                                    <div class="swiper-slide h-auto"><a class="glightbox product-view"
+                                                                        href="{{ image.image.url }}"
+                                                                        data-gallery="gallery{{ image.id }}"
+                                                                        data-glightbox="Product item {{ image.id }}"><img
+                                            class="img-fluid" src="{{ image.image.url }}" alt="..."></a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- PRODUCT DETAILS-->
+                <div class="col-lg-6">
+                    <h1>{{ product.title }}</h1>
+                    <p class="text-muted lead">${{ product.price }}</p>
+                    <p class="text-sm mb-4">{{ product.short_description }}</p>
+                    {% if request.user.is_authenticated %}
+                    <div class="row align-items-stretch mb-4">
+                        <div class="col-sm-3 pl-sm-0"><a
+                                class="btn btn-dark btn-sm btn-block h-100 d-flex align-items-center justify-content-center px-0"
+                                href="{% url 'shop:add-to-cart' product.slug %}">Add to cart</a></div>
+                    </div>
+                    {% if product in request.user.wishlist.product.all %}
+                    <a class="text-dark p-0 mb-4 d-inline-block" href="{% url 'shop:wishlist-add-or-remove' product.slug %}"><i class="fas fa-heart text-danger me-2"></i>Add to wish
+                        list</a><br>
+                    {% else %}
+                    <a class="text-dark p-0 mb-4 d-inline-block" href="{% url 'shop:wishlist-add-or-remove' product.slug %}"><i class="far fa-heart me-2"></i>Add to wish
+                        list</a><br>
+                    {% endif %}
+                    {% endif %}
+                    <ul class="list-unstyled small d-inline-block">
+                        {% for category in product.category.all %}
+                        <li class="px-3 py-2 mb-1 bg-white text-muted"><strong class="text-uppercase text-dark">Category:</strong><a
+                                class="reset-anchor ms-2">{{ category.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <!-- DETAILS TABS-->
+            <ul class="nav nav-tabs border-0" id="myTab" role="tablist">
+                <li class="nav-item"><a class="nav-link text-uppercase active" id="description-tab" data-bs-toggle="tab"
+                                        href="#description" role="tab" aria-controls="description" aria-selected="true">Description</a>
+                </li>
+                <li class="nav-item"><a class="nav-link text-uppercase" id="reviews-tab" data-bs-toggle="tab"
+                                        href="#reviews" role="tab" aria-controls="reviews"
+                                        aria-selected="false">Reviews</a></li>
+            </ul>
+            <div class="tab-content mb-5" id="myTabContent">
+                <div class="tab-pane fade show active" id="description" role="tabpanel"
+                     aria-labelledby="description-tab">
+                    <div class="p-4 p-lg-5 bg-white">
+                        <h6 class="text-uppercase">Product description </h6>
+                        <p class="text-muted text-sm mb-0">{{ product.full_description }}</p>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <div class="p-4 p-lg-5 bg-white">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                {% for comment in product.comments.all %}
+                                <div class="d-flex mb-4">
+                                    <div class="flex-shrink-0">
+                                        {% if comment.user.profile_image %}
+                                        <img class="rounded-circle" src="{{ comment.user.profile_image.url }}"
+                                             width="50" height="50" style="object-fit: cover;">
+                                        {% else %}
+                                        <img class="rounded-circle" src="/media/base_images/default_user.webp"
+                                             width="50" height="50">
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="ms-3">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <h6 class="mb-0 text-uppercase">{{ comment.user.username }}</h6>
+                                            <small class="ms-2 text-muted text-uppercase" style="font-size: 0.7rem;">{{ comment.created_at }}</small>
+                                        </div>
+                                        <p class="text-sm mb-0 text-muted">{{ comment.text }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if request.user.is_authenticated %}
+                    <form method="POST" enctype="multipart/form-data" class="mt-5">
+                        {% csrf_token %}
+
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success">Оставить комментарий</button>
+                    </form>
+                    {% else %}
+                    <p class="text-center mt-2"><b>Вам необходимо войти в аккаунт чтобы написать комментарий.</b></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}
